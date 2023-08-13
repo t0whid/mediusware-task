@@ -12,34 +12,27 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'account_type', 'balance', 'email', 'password'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function withdrawalThisMonth()
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+        return Transaction::where('user_id', $this->id)
+            ->where('transaction_type', 'withdrawal')
+            ->whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->sum('amount');
+    }
+
+    public function totalWithdrawal()
+    {
+        return Transaction::where('user_id', $this->id)
+            ->where('transaction_type', 'withdrawal')
+            ->sum('amount');
+    }
 }
